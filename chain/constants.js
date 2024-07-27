@@ -1,4 +1,4 @@
-const { INFURA_ID } = process.env;
+const { INFURA_ID } = require("../config");
 
 const NETWORKS = {
   localhost: {
@@ -6,6 +6,10 @@ const NETWORKS = {
     chainId: 1337,
     rpcUrl: 'http://127.0.0.1:8545',
     blockExplorer: '',
+  },
+  qday: {
+    chainId: 1001,
+    rpcUrl: "http://159.138.82.123:8123",
   },
   mainnet: {
     name: 'mainnet',
@@ -36,8 +40,6 @@ const NETWORKS = {
     blockExplorer: 'https://mumbai.polygonscan.com/',
   },
 };
-
-exports.INFURA_ID = INFURA_ID;
 
 exports.NETWORKS = NETWORKS;
 

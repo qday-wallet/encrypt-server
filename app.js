@@ -7,7 +7,7 @@ const app = new Koa();
 
 app.use(logger());
 
-app.use(koaBody({ multipart: true }));
+app.use(koaBody());
 
 app.use(router.routes());
 

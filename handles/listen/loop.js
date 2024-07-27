@@ -1,6 +1,7 @@
 const { provider } = require('../../chain');
 const { sleep, getCur, setCur } = require('./utils');
 
+
 module.exports = class {
   constructor(interval, batchSize) {
     this.interval = interval || 5000;

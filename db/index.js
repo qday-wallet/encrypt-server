@@ -1,3 +1,3 @@
 exports.accounts = require('./accounts');
-exports.utxos = require('./utxos');
+exports.transcations = require('./transcations');
 exports.configs = require('./configs');
