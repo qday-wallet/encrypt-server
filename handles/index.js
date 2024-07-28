@@ -1,7 +1,9 @@
-const { isAddress, isHexString, Contract, Wallet, toUtf8Bytes } = require('ethers');
+const { Contract, Wallet, ZeroAddress } = require('ethers');
+const { isAddress, toUtf8Bytes } = require('ethers');
 const db = require('../db');
 const { provider, abis, contracts } = require('../chain');
-const { aesEncrypt } = require("./listen/utils");
+const { aesEncrypt } = require('./listen/utils');
+require('./listen');
 
 exports.account = async (ctx) => {
   try {
@@ -11,7 +13,7 @@ exports.account = async (ctx) => {
     }
     ctx.body = db.accounts.select({ address: address.toLowerCase() });
     if (ctx.body === undefined) {
-      ctx.body = { address, balance: "0", lastTxHash: "0x0", lastBlockHeight: "0" };
+      ctx.body = { address, balance: '0', lastTxHash: '0x0' };
     }
     ctx.status = 200;
   } catch (error) {
@@ -26,7 +28,7 @@ exports.tx = async (ctx) => {
     if (!isAddress(address)) {
       throw `address format error`;
     }
-    ctx.body = db.transcations.select({ address: address.toLowerCase() });
+    ctx.body = db.transcations.all({ address: address.toLowerCase() });
     if (ctx.body === undefined) {
       ctx.body = [];
     }
@@ -40,17 +42,12 @@ exports.tx = async (ctx) => {
 exports.stakeTx = async (ctx) => {
   try {
     let { key, value } = ctx.request.body;
-    if (key.slice(0, 2) != "0x" && key.slice(0, 2) != "0X") {
-      key = "0x" + key;
-    }
-    if (!isHexString(key) || key.length !== 66) {
-      throw `key format error`;
-    }
+    value = BigInt(value).toString(10);
     const signer = new Wallet(key, provider);
     const wQday = new Contract(contracts.WQDAY, abis.WQday, signer);
     const privacy = new Contract(contracts.PRIVACY, abis.Privacy, signer);
     await wQday.transfer(contracts.PRIVACY, value);
-    const data = `{"from":"0x0","to":"${signer.address}","value":"${value}"}`;
+    const data = `{"from":"${ZeroAddress}","to":"${signer.address.toLowerCase()}","value":"${value}"}`;
     ctx.body = await privacy.recordUTXO(toUtf8Bytes(aesEncrypt(data)));
     ctx.status = 200;
   } catch (error) {
@@ -61,11 +58,23 @@ exports.stakeTx = async (ctx) => {
 
 exports.encryptTx = async (ctx) => {
   try {
-    const { key, from, to, value } = ctx.request.body;
+    let { key, from, to, value } = ctx.request.body;
+    if (!isAddress(from)) {
+      throw `from format error`;
+    }
+    if (!isAddress(to)) {
+      throw `to format error`;
+    }
+    from = from.toLowerCase();
+    to = to.toLowerCase();
+    value = BigInt(value).toString(10);
     const signer = new Wallet(key, provider);
     const privacy = new Contract(contracts.PRIVACY, abis.Privacy, signer);
     const data = `{"from":"${from}","to":"${to}","value":"${value}"}`;
-    // todo 余额校验
+    const account = db.accounts.select({ address: from });
+    if (BigInt(account ? account.balance : '0') < BigInt(value)) {
+      throw `account balance not enough`;
+    }
     ctx.body = await privacy.recordUTXO(toUtf8Bytes(aesEncrypt(data)));
     ctx.status = 200;
   } catch (error) {

@@ -1,7 +1,6 @@
 const { provider } = require('../../chain');
 const { sleep, getCur, setCur } = require('./utils');
 
-
 module.exports = class {
   constructor(interval, batchSize) {
     this.interval = interval || 5000;
@@ -12,7 +11,7 @@ module.exports = class {
   sub(mappings) {
     const { interfaces, handles } = mappings;
     for (const name in handles) {
-      const topic = interfaces.getEventTopic(name);
+      const topic = interfaces.getEvent(name).topicHash;
       const indexdLength = interfaces.getEvent(name).inputs.filter((param) => param.indexed).length;
       if (!this.handles[topic]) {
         this.handles[topic] = {};

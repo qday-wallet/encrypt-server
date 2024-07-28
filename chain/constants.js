@@ -1,4 +1,4 @@
-const { INFURA_ID } = require("../config");
+const { INFURA_ID } = require('../config');
 
 const NETWORKS = {
   localhost: {
@@ -9,7 +9,7 @@ const NETWORKS = {
   },
   qday: {
     chainId: 1001,
-    rpcUrl: "http://159.138.82.123:8123",
+    rpcUrl: 'http://159.138.82.123:8123',
   },
   mainnet: {
     name: 'mainnet',

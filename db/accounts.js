@@ -1,19 +1,19 @@
 const db = require('./db');
 
 const create =
-  'CREATE TABLE IF NOT EXISTS accounts (address TEXT, balance TEXT, lastTxHash TEXT, lastBlockHeight TEXT, PRIMARY KEY(address));';
+  'CREATE TABLE IF NOT EXISTS accounts (address TEXT, balance TEXT, lastTxHash TEXT, PRIMARY KEY(address));';
 db.prepare(create).run();
 
 exports.insert = (values) => {
   const stmt = db.prepare(
-    'INSERT INTO accounts (address, balance, lastTxHash, lastBlockHeight) values (@address, @balance, @lastTxHash, @lastBlockHeight);'
+    'INSERT INTO accounts (address, balance, lastTxHash) values (@address, @balance, @lastTxHash);'
   );
   return stmt.run(values).lastInsertRowid;
 };
 
 exports.replace = (values) => {
   const stmt = db.prepare(
-    'INSERT INTO accounts (address, balance, lastTxHash, lastBlockHeight) values (@address, @balance, @lastTxHash, @lastBlockHeight) ON CONFLICT(address) DO UPDATE SET balance = @balance, lastTxHash = @lastTxHash, lastBlockHeight = @lastBlockHeight;'
+    'INSERT INTO accounts (address, balance, lastTxHash) values (@address, @balance, @lastTxHash) ON CONFLICT(address) DO UPDATE SET balance = @balance, lastTxHash = @lastTxHash;'
   );
   return stmt.run(values).lastInsertRowid;
 };

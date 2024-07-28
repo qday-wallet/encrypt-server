@@ -1,5 +1,6 @@
-const { AES, enc } = require("crypto-js");
+const { AES, enc } = require('crypto-js');
 const { configs } = require('../../db');
+const { AES_KEY } = require('../../config');
 
 exports.sleep = (time) => new Promise((resolve) => setTimeout(resolve, time));
 
@@ -11,12 +12,10 @@ exports.setCur = (cur) => {
   configs.replace({ key: 'curNumber', value: cur.toString() });
 };
 
-const key = "hfgrewrndgtrg65234434343665bgeeg";
-
 exports.aesEncrypt = (data) => {
-  return AES.encrypt(data, key).toString();
-}
+  return AES.encrypt(data, AES_KEY).toString();
+};
 
 exports.aesDecrypt = (data) => {
-  return AES.decrypt(data, key).toString(enc.Utf8);
-}
+  return AES.decrypt(data, AES_KEY).toString(enc.Utf8);
+};

@@ -1,39 +1,32 @@
-const { utils } = require('ethers');
-const { abis, contracts, provider } = require('../../chain');
-const event = require('../events');
+const { Interface, toUtf8String } = require('ethers');
+const { abis, contracts } = require('../../chain');
+const { aesDecrypt } = require('./utils');
+const { transfer } = require('../events');
 
-const ITradeCore = new utils.Interface(abis.TradeCore);
+const IPrivacy = new Interface(abis.Privacy);
 
 module.exports = {
-  interfaces: ITradeCore,
+  interfaces: IPrivacy,
   handles: {
-    Complete: async (log) => {
-      if (log.address === contracts.TradeCore.address) {
-        const dLog = ITradeCore.parseLog(log);
-        const { timestamp } = await provider.getBlock(log.blockHash);
-        const tx = await provider.getTransaction(log.transactionHash);
-        const dTx = ITradeCore.parseTransaction(tx);
-        event.saleComplete({
-          dLog,
-          dTx,
-          time: timestamp,
-        });
-      } else {
-        console.log(log.address, 'not tradeCore');
-      }
-    },
-    Cancel: async (log) => {
-      if (log.address === contracts.TradeCore.address) {
-        const dLog = ITradeCore.parseLog(log);
-        const { addr, id, user, nonce } = dLog.args;
-        event.saleCancel({
-          contract: addr,
-          id: id.toString(),
-          user: user,
-          nonce: nonce.toNumber(),
-        });
-      } else {
-        console.log(log.address, 'not tradeCore');
+    UTXORecorded: async (log) => {
+      const { address, transactionHash, removed } = log;
+      if (address.toLowerCase() === contracts.PRIVACY.toLowerCase()) {
+        const {
+          args: { utxoId, encryptedData },
+        } = IPrivacy.parseLog(log);
+        try {
+          const { from, to, value } = JSON.parse(aesDecrypt(toUtf8String(encryptedData)));
+          transfer({
+            hash: transactionHash,
+            from: from.toLowerCase(),
+            to: to.toLowerCase(),
+            value,
+            status: removed ? 0 : 1,
+          });
+          console.log('Decrypt data success:', utxoId, from, to, value);
+        } catch (error) {
+          console.log('Decrypt data fail:', utxoId, encryptedData);
+        }
       }
     },
   },

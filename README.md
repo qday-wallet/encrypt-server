@@ -4,7 +4,7 @@
 ## 提供接口
 1. 查询账户：端口account，参数账号地址，返回账户余额、最后交易哈希和区块高度
 
-    `get /account?address=0x123...abc	return {"balance":"100000","lastTxHash":"0x123...abc","lastBlockHeight":"20000"}`
+    `get /account?address=0x123...abc	return {"balance":"100000","lastTxHash":"0x123...abc"}`
 
 2. 查询加密交易记录：端口tx，参数账号地址，返回加密交易列表（最新最多1000条）,status为1表示成功，0表示失败
 

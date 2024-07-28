@@ -1,23 +1,23 @@
-const { constants, utils } = require('ethers');
-const db = require('../db');
-const { contracts } = require('../chain');
-require('./listen');
+const { transcations, accounts, rowDB } = require('../db');
 
 exports.transfer = (params) => {
-  const { contract, from, to } = params;
-  db.events.strictInsert({
-    ...params,
-    type: db.events.types.transfer,
-  });
-  if (from !== to) {
-    if (to !== constants.AddressZero) {
-      if (contract !== contracts.NFT1155.address) {
-        db.external.tryMint(params);
-      }
-    } else {
-      db.external.tryBurn(params);
+  rowDB.transaction(() => {
+    transcations.insert(params);
+    const { hash, from, to, value, status } = params;
+    if (status === 0) {
+      return;
     }
-
-    db.owner.transfer(params);
-  }
+    let account = accounts.select({ address: from });
+    accounts.replace({
+      address: from,
+      balance: (BigInt(account ? account.balance : '0') - BigInt(value)).toString(10),
+      lastTxHash: hash,
+    });
+    account = accounts.select({ address: to });
+    accounts.replace({
+      address: to,
+      balance: (BigInt(account ? account.balance : '0') + BigInt(value)).toString(10),
+      lastTxHash: hash,
+    });
+  })();
 };
