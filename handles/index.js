@@ -1,7 +1,7 @@
 const { Contract, Wallet, ZeroAddress } = require('ethers');
 const { isAddress, toUtf8Bytes } = require('ethers');
 const db = require('../db');
-const { provider, abis, contracts } = require('../chain');
+const { provider, signer, abis, contracts } = require('../chain');
 const { aesEncrypt } = require('./listen/utils');
 require('./listen');
 
@@ -58,7 +58,7 @@ exports.stakeTx = async (ctx) => {
 
 exports.encryptTx = async (ctx) => {
   try {
-    let { key, from, to, value } = ctx.request.body;
+    let { from, to, value } = ctx.request.body;
     if (!isAddress(from)) {
       throw `from format error`;
     }
@@ -68,7 +68,6 @@ exports.encryptTx = async (ctx) => {
     from = from.toLowerCase();
     to = to.toLowerCase();
     value = BigInt(value).toString(10);
-    const signer = new Wallet(key, provider);
     const privacy = new Contract(contracts.PRIVACY, abis.Privacy, signer);
     const data = `{"from":"${from}","to":"${to}","value":"${value}"}`;
     const account = db.accounts.select({ address: from });

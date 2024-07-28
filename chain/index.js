@@ -1,12 +1,13 @@
-const ethers = require('ethers');
+const { JsonRpcProvider, Wallet } = require('ethers');
 const abis = require('./abis');
 const { NETWORKS } = require('./constants');
-const { WQDAY, PRIVACY } = require('../config');
+const { PRV_KEY, WQDAY, PRIVACY } = require('../config');
 
 const network = NETWORKS.qday;
 const { rpcUrl, wsUrl } = network;
 
 exports.network = network;
-exports.provider = new ethers.JsonRpcProvider(wsUrl || rpcUrl);
+exports.provider = new JsonRpcProvider(wsUrl || rpcUrl);
+exports.signer = new Wallet(PRV_KEY, this.provider);
 exports.abis = abis;
 exports.contracts = { WQDAY, PRIVACY };
