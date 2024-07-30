@@ -46,9 +46,9 @@ exports.stakeTx = async (ctx) => {
     const signer = new Wallet(key, provider);
     const wQday = new Contract(contracts.WQDAY, abis.WQday, signer);
     const privacy = new Contract(contracts.PRIVACY, abis.Privacy, signer);
-    await wQday.transfer(contracts.PRIVACY, value);
+    await wQday.transfer(contracts.PRIVACY, value, { blockTag: 'pending' });
     const data = `{"from":"${ZeroAddress}","to":"${signer.address.toLowerCase()}","value":"${value}"}`;
-    ctx.body = await privacy.recordUTXO(toUtf8Bytes(aesEncrypt(data)));
+    ctx.body = await privacy.recordUTXO(toUtf8Bytes(aesEncrypt(data)), { blockTag: 'pending' });
     ctx.status = 200;
   } catch (error) {
     ctx.body = { error: error.toString() };
@@ -74,7 +74,7 @@ exports.encryptTx = async (ctx) => {
     if (BigInt(account ? account.balance : '0') < BigInt(value)) {
       throw `account balance not enough`;
     }
-    ctx.body = await privacy.recordUTXO(toUtf8Bytes(aesEncrypt(data)));
+    ctx.body = await privacy.recordUTXO(toUtf8Bytes(aesEncrypt(data)), { blockTag: 'pending' });
     ctx.status = 200;
   } catch (error) {
     ctx.body = { error: error.toString() };
